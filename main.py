@@ -8,13 +8,20 @@ H4 = "**** "
 H3 = "*** "
 H2 = "** "
 H1 = "* "
-COMMENT = "#"
+BEGIN_CODE_BLOCK = "#+begin_src"
+END_CODE_BLOCK = "#+end_src"
+TITLE = "#+title"
+DATE = "#+date"
+TAGS = "#+tags"
 ORG_FILE_EXTENSION = ".org"
 HTML_FILE_EXTENSION = ".html"
 HTML_HEADER = """<!doctype html>
-<html>
+<html lang="en">
   <head>
     <title>TITLE</title>
+      <link rel="stylesheet" href="style.css">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta charset="UTF-8">
   </head>
   <body>
 """
@@ -32,7 +39,7 @@ def translate_org_file(org_file):
                                         org_file.replace(ORG_FILE_EXTENSION, ""))]
     with open(org_file, 'r') as input:
         for line in input:
-            if line.startswith(COMMENT) or line.startswith("\n"):
+            if line.startswith("\n"):
                 continue
             output_lines.append(translate_line(line))
     output_lines.append(HTML_FOOTER)
@@ -57,6 +64,15 @@ def translate_headings(line):
         return "<h2>" + line.replace(H2, "") + "</h2>"
     if line.startswith(H1):
         return "<h1>" + line.replace(H1, "") + "</h1>"
+
+    # Rudimentary parsing of code blocks
+    # Handle proper syntax highlighting later
+    if line.startswith(BEGIN_CODE_BLOCK):
+        return "<code>"
+    if line.startswith(END_CODE_BLOCK):
+        return "</code>"
+
+    # Default to <p>
     return "<p>" + line + "</p>"
 
 
@@ -66,8 +82,9 @@ def translate_line(line):
     line = re.sub("/(.*?)/", "<em>\\1</em>", line)
     line = re.sub("\\*(.*?)\\*", "<strong>\\1</strong>", line)
     line = re.sub("_(.*?)_", "<u>\\1</u>", line)
+    line = re.sub("~(.*?)~", "<code>\\1</code>", line)
 
     return line
 
 
-translate_org_file("../org-mode/resources/source-based/the_science_of_selling.org")
+translate_org_file("../orgmode-website/sample-post.org")
