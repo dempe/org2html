@@ -69,7 +69,7 @@ def export_to_html(org_file):
             if line.startswith(DESCRIPTION):
                 description = line.replace(DESCRIPTION, "").strip()
                 continue
-            output_lines.append(translate_line(line))
+            output_lines.append(translate_to_html(line))
 
     output_lines = [HTML_HEADER.replace("TITLE", title)
                                .replace("LANGUAGE", language)
@@ -83,7 +83,18 @@ def export_to_html(org_file):
         output.write(bs("".join(output_lines), "html.parser").prettify())
 
 
-def translate_headings(line):
+def translate_to_html(line):
+    line = line.replace("\n", "").strip()
+    line = translate_block_elements(line)  # must come _before_ following code
+
+    # Don't want to apply formatting to code
+    if inside_code_block:
+        return line
+
+    return translate_inline_elements(line)
+
+
+def translate_block_elements(line):
     # Translate headings
     # NOTE: these are order-dependent
     if line.startswith(H6):
@@ -111,9 +122,13 @@ def translate_headings(line):
 
     global inside_list
     if line.startswith(ORG_LIST):
+        # Remove the initial "+ "
+        line = f'<ul><li>{line[2:]}</li>' if not inside_list else f'<li>{line[2:]}</li>'
         inside_list = True
-        return f'<li>{line[2:]}</li>'  # Remove the initial "+ "
+        return line
     else:
+        if inside_list:
+            line = f'</ul>{line}'
         inside_list = False
 
     # Handle comments
@@ -124,14 +139,7 @@ def translate_headings(line):
     return f'{line}\n' if inside_code_block else "<p>" + line + "</p>"
 
 
-def translate_line(line):
-    line = line.replace("\n", "").strip()
-    line = translate_headings(line)  # must come _before_ following code
-
-    # Don't want to apply formatting to code
-    if inside_code_block:
-        return line
-
+def translate_inline_elements(line):
     # Only slashes preceded by a space should be italicized. Use positive lookbehind for space
     line = re.sub("(?<= )/(.*?)/", "<em>\\1</em>", line)
     line = re.sub("\\*(.*?)\\*", "<strong>\\1</strong>", line)
