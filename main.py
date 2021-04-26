@@ -41,13 +41,18 @@ inside_code_block = False
 inside_list = False
 
 
-def export_to_html(org_file):
-    if not org_file.endswith(ORG_FILE_EXTENSION):
+def export_to_html(org_filename):
+    """
+    This function takes an org-mode file and exports it to HTML
+    :param org_filename: org-mode file to translate
+    :return: a string containing the translated HTML
+    """
+    if not org_filename.endswith(ORG_FILE_EXTENSION):
         raise Exception("Must provide an org-mode file.")
 
     output_lines = []
     title, language, date, tags, author, description = "", "", "", "", "", ""
-    with open(org_file, 'r') as input:
+    with open(org_filename, 'r') as input:
         for line in input:
             if line.startswith("\n"):
                 continue
@@ -78,9 +83,7 @@ def export_to_html(org_file):
                                .replace("AUTHOR", author)] + output_lines
     output_lines.append(HTML_FOOTER)
 
-    html_file = org_file.replace(ORG_FILE_EXTENSION, HTML_FILE_EXTENSION)
-    with open(html_file, 'w') as output:
-        output.write(bs("".join(output_lines), "html.parser").prettify())
+    return bs("".join(output_lines), "html.parser").prettify()
 
 
 def translate_to_html(line):
@@ -129,7 +132,7 @@ def translate_block_elements(line):
     else:
         if inside_list:
             line = f'</ul>{line}'
-        inside_list = False
+            inside_list = False
 
     # Handle comments
     if line.startswith(ORG_COMMENT):
@@ -150,7 +153,3 @@ def translate_inline_elements(line):
     line = re.sub(r"\[\[(.*?)]\[(.*?)]]", r"<a href=\1>\2</a>", line)
 
     return line
-
-
-export_to_html("../orgmode-website/sample-post.org")
-export_to_html("../org-mode/resources/source-based/the_science_of_selling.org")
