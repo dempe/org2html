@@ -13,6 +13,8 @@ TITLE = "#+TITLE:"
 DATE = "#+DATE:"
 TAGS = "#+TAGS:"
 LANGUAGE = "#+LANGUAGE:"
+AUTHOR = "#+AUTHOR:"
+DESCRIPTION = "#+DESCRIPTION:"
 ORG_COMMENT = "#"
 ORG_LIST = "+"
 ORG_FILE_EXTENSION = ".org"
@@ -21,9 +23,12 @@ HTML_HEADER = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http:
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="LANGUAGE" lang="LANGUAGE">
   <head>
     <title>TITLE</title>
-      <link rel="stylesheet" href="style.css">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="author" content="AUTHOR">
+    <meta name="keywords" content="TAGS">
+    <meta name="description" content="DESCRIPTION">
   </head>
   <body>
 """
@@ -41,7 +46,7 @@ def export_to_html(org_file):
         raise Exception("Must provide an org-mode file.")
 
     output_lines = []
-    title, language, date, tags = "", "", "", ""
+    title, language, date, tags, author, description = "", "", "", "", "", ""
     with open(org_file, 'r') as input:
         for line in input:
             if line.startswith("\n"):
@@ -58,10 +63,19 @@ def export_to_html(org_file):
             if line.startswith(TAGS):
                 tags = line.replace(TAGS, "").strip()
                 continue
+            if line.startswith(AUTHOR):
+                author = line.replace(AUTHOR, "").strip()
+                continue
+            if line.startswith(DESCRIPTION):
+                description = line.replace(DESCRIPTION, "").strip()
+                continue
             output_lines.append(translate_line(line))
 
     output_lines = [HTML_HEADER.replace("TITLE", title)
-                               .replace("LANGUAGE", language)] + output_lines
+                               .replace("LANGUAGE", language)
+                               .replace("TAGS", tags)
+                               .replace("DESCRIPTION", description)
+                               .replace("AUTHOR", author)] + output_lines
     output_lines.append(HTML_FOOTER)
 
     html_file = org_file.replace(ORG_FILE_EXTENSION, HTML_FILE_EXTENSION)
