@@ -58,17 +58,17 @@ def translate_headings(line):
     # Translate headings
     # NOTE: these are order-dependent
     if line.startswith(H6):
-        return "<h6>" + line.replace(H6, "") + "</h6>"
+        return f'<h6>{line[7:]}</h6>'
     if line.startswith(H5):
-        return "<h5>" + line.replace(H5, "") + "</h5>"
+        return f'<h5>{line[6:]}</h5>'
     if line.startswith(H4):
-        return "<h4>" + line.replace(H4, "") + "</h4>"
+        return f'<h4>{line[5:]}</h4>'
     if line.startswith(H3):
-        return "<h3>" + line.replace(H3, "") + "</h3>"
+        return f'<h3>{line[4:]}</h3>'
     if line.startswith(H2):
-        return "<h2>" + line.replace(H2, "") + "</h2>"
+        return f'<h2>{line[3:]}</h2>'
     if line.startswith(H1):
-        return "<h1>" + line.replace(H1, "") + "</h1>"
+        return f'<h1>{line[2:]}</h1>'
 
     # Rudimentary parsing of code blocks
     # Handle proper syntax highlighting later
