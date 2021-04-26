@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup as bs
 import re
 
-
 H6 = "****** "
 H5 = "***** "
 H4 = "**** "
@@ -103,16 +102,17 @@ def translate_line(line):
     if inside_code_block:
         return line
 
-    line = re.sub("(?<!<)/(.*?)/", "<em>\\1</em>", line)  # Use negative lookbehind to avoid matching closing HTML tags
+    # Only slashes preceded by a space should be italicized. Use positive lookbehind for space
+    line = re.sub("(?<= )/(.*?)/", "<em>\\1</em>", line)
     line = re.sub("\\*(.*?)\\*", "<strong>\\1</strong>", line)
     line = re.sub("_(.*?)_", "<u>\\1</u>", line)
     line = re.sub("~(.*?)~", "<code>\\1</code>", line)
     line = re.sub("=(.*?)=", "<samp>\\1</samp>", line)
     line = re.sub("\\+(.*?)\\+", "<del>\\1</del>", line)
+    line = re.sub(r"\[\[(.*?)]\[(.*?)]]", r"<a href=\1>\2</a>", line)
 
     return line
 
 
 translate_org_file("../orgmode-website/sample-post.org")
 translate_org_file("../org-mode/resources/source-based/the_science_of_selling.org")
-
