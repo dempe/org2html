@@ -9,15 +9,16 @@ H2 = "** "
 H1 = "* "
 BEGIN_CODE_BLOCK = "#+begin_src"
 END_CODE_BLOCK = "#+end_src"
-TITLE = "#+title"
-DATE = "#+date"
-TAGS = "#+tags"
+TITLE = "#+TITLE:"
+DATE = "#+DATE:"
+TAGS = "#+TAGS:"
+LANGUAGE = "#+LANGUAGE:"
 ORG_COMMENT = "#"
 ORG_LIST = "+"
 ORG_FILE_EXTENSION = ".org"
 HTML_FILE_EXTENSION = ".html"
-HTML_HEADER = """<!doctype html>
-<html lang="en">
+HTML_HEADER = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="LANGUAGE" lang="LANGUAGE">
   <head>
     <title>TITLE</title>
       <link rel="stylesheet" href="style.css">
@@ -35,17 +36,32 @@ inside_code_block = False
 inside_list = False
 
 
-def translate_org_file(org_file):
+def export_to_html(org_file):
     if not org_file.endswith(ORG_FILE_EXTENSION):
         raise Exception("Must provide an org-mode file.")
 
-    output_lines = [HTML_HEADER.replace("TITLE",
-                                        org_file.replace(ORG_FILE_EXTENSION, ""))]
+    output_lines = []
+    title, language, date, tags = "", "", "", ""
     with open(org_file, 'r') as input:
         for line in input:
             if line.startswith("\n"):
                 continue
+            if line.startswith(TITLE):
+                title = line.replace(TITLE, "").strip()
+                continue
+            if line.startswith(LANGUAGE):
+                language = line.replace(LANGUAGE, "").strip()
+                continue
+            if line.startswith(DATE):
+                date = line.replace(DATE, "").strip()
+                continue
+            if line.startswith(TAGS):
+                tags = line.replace(TAGS, "").strip()
+                continue
             output_lines.append(translate_line(line))
+
+    output_lines = [HTML_HEADER.replace("TITLE", title)
+                               .replace("LANGUAGE", language)] + output_lines
     output_lines.append(HTML_FOOTER)
 
     html_file = org_file.replace(ORG_FILE_EXTENSION, HTML_FILE_EXTENSION)
@@ -114,5 +130,5 @@ def translate_line(line):
     return line
 
 
-translate_org_file("../orgmode-website/sample-post.org")
-translate_org_file("../org-mode/resources/source-based/the_science_of_selling.org")
+export_to_html("../orgmode-website/sample-post.org")
+export_to_html("../org-mode/resources/source-based/the_science_of_selling.org")
