@@ -13,6 +13,8 @@ END_CODE_BLOCK = "#+end_src"
 TITLE = "#+title"
 DATE = "#+date"
 TAGS = "#+tags"
+ORG_COMMENT = "#"
+ORG_LIST = "+"
 ORG_FILE_EXTENSION = ".org"
 HTML_FILE_EXTENSION = ".html"
 HTML_HEADER = """<!doctype html>
@@ -30,6 +32,9 @@ HTML_FOOTER = """
 </html>
 """
 
+inside_code_block = False
+inside_list = False
+
 
 def translate_org_file(org_file):
     if not org_file.endswith(ORG_FILE_EXTENSION):
@@ -46,7 +51,7 @@ def translate_org_file(org_file):
 
     html_file = org_file.replace(ORG_FILE_EXTENSION, HTML_FILE_EXTENSION)
     with open(html_file, 'w') as output:
-        output.write(bs("\n".join(output_lines), "html.parser").prettify())
+        output.write(bs("".join(output_lines), "html.parser").prettify())
 
 
 def translate_headings(line):
@@ -67,24 +72,47 @@ def translate_headings(line):
 
     # Rudimentary parsing of code blocks
     # Handle proper syntax highlighting later
+    global inside_code_block
     if line.startswith(BEGIN_CODE_BLOCK):
-        return "<code>"
+        inside_code_block = True
+        return "<pre><code>"
     if line.startswith(END_CODE_BLOCK):
-        return "</code>"
+        inside_code_block = False
+        return "</code></pre>"
+
+    global inside_list
+    if line.startswith(ORG_LIST):
+        inside_list = True
+        return f'<li>{line[2:]}</li>'  # Remove the initial "+ "
+    else:
+        inside_list = False
+
+    # Handle comments
+    if line.startswith(ORG_COMMENT):
+        return ""
 
     # Default to <p>
-    return "<p>" + line + "</p>"
+    return f'{line}\n' if inside_code_block else "<p>" + line + "</p>"
 
 
 def translate_line(line):
     line = line.replace("\n", "").strip()
     line = translate_headings(line)  # must come _before_ following code
-    line = re.sub("/(.*?)/", "<em>\\1</em>", line)
+
+    # Don't want to apply formatting to code
+    if inside_code_block:
+        return line
+
+    line = re.sub("(?<!<)/(.*?)/", "<em>\\1</em>", line)  # Use negative lookbehind to avoid matching closing HTML tags
     line = re.sub("\\*(.*?)\\*", "<strong>\\1</strong>", line)
     line = re.sub("_(.*?)_", "<u>\\1</u>", line)
     line = re.sub("~(.*?)~", "<code>\\1</code>", line)
+    line = re.sub("=(.*?)=", "<samp>\\1</samp>", line)
+    line = re.sub("\\+(.*?)\\+", "<del>\\1</del>", line)
 
     return line
 
 
 translate_org_file("../orgmode-website/sample-post.org")
+translate_org_file("../org-mode/resources/source-based/the_science_of_selling.org")
+
