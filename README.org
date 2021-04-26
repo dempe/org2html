@@ -1,0 +1,20 @@
+* Export Org-mode files to HTML
+
+  I was unhappy with the built-in Org-mode exporter, so I built my own.
+
+  As of Mon 2021-04-26, it is incomplete.
+
+  Some missing features that I plan to implement are:
+
+  + Parsing ordered lists
+  + Parsing quotes
+  + Parsing code block language
+  + Parsing
+    + Nested
+      + Lists
+  + Parsing images
+  + Parsing footnotes
+  + Parsing tables
+  + Parsing subscripts and superscripts
+
+  There are many more features to Org-mode syntax that I have no plans on implementing, because I don't have a personal use case for them.
